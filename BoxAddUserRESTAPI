@@ -1,0 +1,48 @@
+# Box App settings
+$clientId = 'YOUR_CLIENT_ID'
+$clientSecret = 'YOUR_CLIENT_SECRET'
+
+# Request Box App access token
+$params = @{
+    Uri     = 'https://api.box.com/oauth2/token'
+    Method = 'POST'
+    Body    = @{
+        grant_type    = 'client_credentials'
+        client_id     = $clientId
+        client_secret = $clientSecret
+    }
+}
+$response = Invoke-RestMethod @params
+$accessToken = $response.access_token
+
+# AD User details
+$adUser = 'doej'
+$adUserEmail = "$adUser@yourdomain.com"
+
+# Create Box User for AD User
+$params = @{
+    Uri     = 'https://api.box.com/2.0/users'
+    Method = 'POST'
+    Headers = @{Authorization = "Bearer $accessToken"}
+    Body    = @{
+        login       = $adUserEmail
+        name        = $adUser
+    }
+}
+$response = Invoke-RestMethod @params
+$userId = $response.id
+
+# Create "Home" folder for the new Box User
+$params = @{
+    Uri     = 'https://api.box.com/2.0/folders'
+    Method = 'POST'
+    Headers = @{Authorization = "Bearer $accessToken"}
+    Body    = @{
+        name    = 'Home'
+        user_id = $userId
+    }
+}
+$response = Invoke-RestMethod @params
+$folderId = $response.id
+
+Write-Host "Home folder created with ID: $folderId"
