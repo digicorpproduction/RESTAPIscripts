@@ -1,0 +1,35 @@
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$SourcePath,
+    [Parameter(Mandatory=$true)]
+    [string]$DestinationPath,
+    [Parameter(Mandatory=$true)]
+    [string]$AccessToken
+)
+
+# Define the headers for the API call
+$headers = @{
+    'Authorization' = 'Bearer ' + $AccessToken
+    'As-User' = 'YOUR_BOX_USER_ID'
+}
+
+# Define the payload for the move file API call
+$moveFilePayload = @{
+    'fields' = @{
+        'source' = @{
+            'id' = $SourcePath
+        }
+        'destination' = @{
+            'id' = $DestinationPath
+        }
+    }
+}
+
+# Move the file using the Box API
+$response = Invoke-RestMethod -Method POST -Uri 'https://api.box.com/2.0/files/content' -Headers $headers -ContentType 'application/json' -Body ($moveFilePayload | ConvertTo-Json)
+
+if ($response.StatusCode -eq 200) {
+    Write-Host "File moved successfully"
+} else {
+    Write-Host "Error moving file: " $response.ErrorMessage
+}
